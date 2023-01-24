@@ -20,7 +20,7 @@ var (
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
-	pb.UnimplementedGreeterServer
+	pb.UnimplementedPushNotificationServer
 }
 
 func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
