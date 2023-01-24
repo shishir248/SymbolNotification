@@ -1,6 +1,6 @@
 import * as grpcWeb from 'grpc-web';
 import {PushNotificationClient} from '../files/web/NotificationServiceClientPb';
-import {Notification, Response} from '../files/web/notification_pb';
+import {EmptyParam, Notification, Subscription, Response} from '../files/web/notification_pb';
 
 const htmlInputElement = (id: string) => {
   return <HTMLInputElement>document.getElementById(id);
@@ -25,24 +25,26 @@ const requestNotificationPermission = async () => {
   if (permission !== "granted") {
     throw new Error("Permission not granted for Notification");
   }
-  return permission
+  return true
 };
 
 const sayHello = async  () => {
   const notificationService = new PushNotificationClient('http://localhost:50052', null, null);
-
-  check();
-
-  const swRegistration = await registerServiceWorker();
-  const permission = await requestNotificationPermission();
-
-  if(permission === "granted") {
-
-  }
-
   const request = new Notification();
-  var name = (<HTMLInputElement>document.getElementById("name")).value;
-  request.setName(name);
+  const empty = new EmptyParam();
+
+
+  const access = notificationService.getAccess(empty, null,
+    async (err: grpcWeb.RpcError, subscription: Subscription) => {
+      check();
+      const swRegistration = await registerServiceWorker();
+      const permission = await requestNotificationPermission();
+      if (err) {
+        console.log(err)
+        return
+      }
+      subscription.setAccess(permission);
+  });
 
   const call = notificationService.sendNotification(request, null,
     (err: grpcWeb.RpcError, response: Response) => {
@@ -54,7 +56,7 @@ const sayHello = async  () => {
       var reply = document.getElementById("reply");
       reply.textContent = response.getMessage();
         
-      console.log("hello:", response);
+      console.log(response);
   });
 
   call.on('status', (status: grpcWeb.Status) => {
