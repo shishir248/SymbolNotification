@@ -42,26 +42,26 @@ export class PushNotificationClient {
   methodDescriptorGetAccess = new grpcWeb.MethodDescriptor(
     '/notifications.PushNotification/GetAccess',
     grpcWeb.MethodType.UNARY,
-    notification_pb.Access,
+    notification_pb.EmptyParams,
     notification_pb.Subscription,
-    (request: notification_pb.Access) => {
+    (request: notification_pb.EmptyParams) => {
       return request.serializeBinary();
     },
     notification_pb.Subscription.deserializeBinary
   );
 
   getAccess(
-    request: notification_pb.Access,
+    request: notification_pb.EmptyParams,
     metadata: grpcWeb.Metadata | null): Promise<notification_pb.Subscription>;
 
   getAccess(
-    request: notification_pb.Access,
+    request: notification_pb.EmptyParams,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
                response: notification_pb.Subscription) => void): grpcWeb.ClientReadableStream<notification_pb.Subscription>;
 
   getAccess(
-    request: notification_pb.Access,
+    request: notification_pb.EmptyParams,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
                response: notification_pb.Subscription) => void) {
