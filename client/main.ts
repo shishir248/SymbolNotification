@@ -1,7 +1,6 @@
-import { access } from 'fs';
 import * as grpcWeb from 'grpc-web';
 import {PushNotificationClient} from '../files/web/NotificationServiceClientPb';
-import {EmptyParam, Notification, Subscription, Response, Access} from '../files/web/notification_pb';
+import {EmptyParam, Notification, Subscription, Response} from '../files/web/notification_pb';
 
 const htmlInputElement = (id: string) => {
   return <HTMLInputElement>document.getElementById(id);
@@ -32,10 +31,10 @@ const requestNotificationPermission = async () => {
 const sayHello = async  () => {
   const notificationService = new PushNotificationClient('http://localhost:50052', null, null);
   const request = new Notification();
-  const access = new Access();
+  const empty = new EmptyParam();
 
 
-  const sub = notificationService.getAccess(access, null,
+  const access = notificationService.getAccess(empty, null,
     async (err: grpcWeb.RpcError, subscription: Subscription) => {
       check();
       const swRegistration = await registerServiceWorker();
@@ -64,7 +63,7 @@ const sayHello = async  () => {
     console.log("status:", status);
   });
 
-  sub.on('status', (status: grpcWeb.Status) => {
+  access.on('status', (status: grpcWeb.Status) => {
     console.log("status:", status);
   });
 
