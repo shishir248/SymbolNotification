@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -22,12 +23,16 @@ type server struct {
 	pb.UnimplementedPushNotificationServer
 }
 
-func (s *server) GetAccess(ctx context.Context, in *pb.EmptyParam) (*pb.Subscription, error) {
+func (s *server) GetAccess(ctx context.Context, in *pb.Access) (*pb.Subscription, error) {
 	log.Printf("Received: %v", in.GetAccess())
 	return in.GetAccess(), nil
 }
 
 func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
+	if !s.GetAccess() {
+		err := errors.New("Access denied by the user")
+		return nil, err
+	}
 	return &pb.Response{Message: "Hello World"}, nil
 }
 
