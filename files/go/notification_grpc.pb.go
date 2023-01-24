@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PushNotificationClient interface {
 	SendNotification(ctx context.Context, in *Notification, opts ...grpc.CallOption) (*Response, error)
+	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type pushNotificationClient struct {
@@ -42,11 +43,21 @@ func (c *pushNotificationClient) SendNotification(ctx context.Context, in *Notif
 	return out, nil
 }
 
+func (c *pushNotificationClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/notifications.PushNotification/Subscribe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PushNotificationServer is the server API for PushNotification service.
 // All implementations should embed UnimplementedPushNotificationServer
 // for forward compatibility
 type PushNotificationServer interface {
 	SendNotification(context.Context, *Notification) (*Response, error)
+	Subscribe(context.Context, *SubscribeRequest) (*Response, error)
 }
 
 // UnimplementedPushNotificationServer should be embedded to have forward compatible implementations.
@@ -55,6 +66,9 @@ type UnimplementedPushNotificationServer struct {
 
 func (UnimplementedPushNotificationServer) SendNotification(context.Context, *Notification) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendNotification not implemented")
+}
+func (UnimplementedPushNotificationServer) Subscribe(context.Context, *SubscribeRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
 
 // UnsafePushNotificationServer may be embedded to opt out of forward compatibility for this service.
@@ -86,6 +100,24 @@ func _PushNotification_SendNotification_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PushNotification_Subscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubscribeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PushNotificationServer).Subscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/notifications.PushNotification/Subscribe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PushNotificationServer).Subscribe(ctx, req.(*SubscribeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PushNotification_ServiceDesc is the grpc.ServiceDesc for PushNotification service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +128,10 @@ var PushNotification_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendNotification",
 			Handler:    _PushNotification_SendNotification_Handler,
+		},
+		{
+			MethodName: "Subscribe",
+			Handler:    _PushNotification_Subscribe_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

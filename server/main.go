@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 
+	webpush "github.com/SherClockHolmes/webpush-go"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	pb "github.com/shishir248/SymbolNotification/files/go"
 	"google.golang.org/grpc"
@@ -18,6 +19,12 @@ var (
 	port = flag.Int("port", 50051, "The server port")
 )
 
+var (
+	vapidPublicKey  = "YOUR_PUBLIC_VAPID_KEY"
+	vapidPrivateKey = "YOUR_PRIVATE_VAPID_KEY"
+	vapidEmail      = "example@yourdomain.org"
+)
+
 // server is used to implement helloworld.GreeterServer.
 type server struct {
 	pb.UnimplementedPushNotificationServer
@@ -25,6 +32,18 @@ type server struct {
 
 func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
 	if in.GetAccess() {
+		payload := []byte(`{"title":"Push test", "body":"Hello World", "icon":"icon.png"}`) // Send push notification
+
+		_, err := webpush.SendNotification(payload, subscription, &webpush.Options{
+			Subscriber:      vapidEmail,
+			VAPIDPublicKey:  vapidPublicKey,
+			VAPIDPrivateKey: vapidPrivateKey,
+		})
+		if err != nil {
+			log.Printf("Error sending push notification: %v", err)
+			return nil, err
+		}
+
 		return &pb.Response{Message: "Hello World"}, nil
 	}
 	log.Fatalf("Access Denied")

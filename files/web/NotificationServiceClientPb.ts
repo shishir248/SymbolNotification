@@ -82,5 +82,48 @@ export class PushNotificationClient {
     this.methodDescriptorSendNotification);
   }
 
+  methodDescriptorSubscribe = new grpcWeb.MethodDescriptor(
+    '/notifications.PushNotification/Subscribe',
+    grpcWeb.MethodType.UNARY,
+    notification_pb.SubscribeRequest,
+    notification_pb.Response,
+    (request: notification_pb.SubscribeRequest) => {
+      return request.serializeBinary();
+    },
+    notification_pb.Response.deserializeBinary
+  );
+
+  subscribe(
+    request: notification_pb.SubscribeRequest,
+    metadata: grpcWeb.Metadata | null): Promise<notification_pb.Response>;
+
+  subscribe(
+    request: notification_pb.SubscribeRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: notification_pb.Response) => void): grpcWeb.ClientReadableStream<notification_pb.Response>;
+
+  subscribe(
+    request: notification_pb.SubscribeRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: notification_pb.Response) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/notifications.PushNotification/Subscribe',
+        request,
+        metadata || {},
+        this.methodDescriptorSubscribe,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/notifications.PushNotification/Subscribe',
+    request,
+    metadata || {},
+    this.methodDescriptorSubscribe);
+  }
+
 }
 

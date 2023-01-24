@@ -1,6 +1,7 @@
 import * as grpcWeb from 'grpc-web';
 import {PushNotificationClient} from '../files/web/NotificationServiceClientPb';
-import {EmptyParam, Notification, Subscription, Response} from '../files/web/notification_pb';
+import { Notification, Response} from '../files/web/notification_pb';
+import * as webPush from 'web-push';
 
 const htmlInputElement = (id: string) => {
   return <HTMLInputElement>document.getElementById(id);
@@ -16,7 +17,7 @@ const check = () => {
 };
 
 const registerServiceWorker = async () => {
-  const swRegistration = await navigator.serviceWorker.register("sw.js"); //notice the file name
+  const swRegistration = await navigator.serviceWorker.register("/sw.js"); //notice the file name
   return swRegistration;
 };
 
