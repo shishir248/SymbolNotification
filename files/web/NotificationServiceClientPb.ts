@@ -39,49 +39,6 @@ export class PushNotificationClient {
     this.options_ = options;
   }
 
-  methodDescriptorSendNotification = new grpcWeb.MethodDescriptor(
-    '/notifications.PushNotification/SendNotification',
-    grpcWeb.MethodType.UNARY,
-    notification_pb.Notification,
-    notification_pb.Response,
-    (request: notification_pb.Notification) => {
-      return request.serializeBinary();
-    },
-    notification_pb.Response.deserializeBinary
-  );
-
-  sendNotification(
-    request: notification_pb.Notification,
-    metadata: grpcWeb.Metadata | null): Promise<notification_pb.Response>;
-
-  sendNotification(
-    request: notification_pb.Notification,
-    metadata: grpcWeb.Metadata | null,
-    callback: (err: grpcWeb.RpcError,
-               response: notification_pb.Response) => void): grpcWeb.ClientReadableStream<notification_pb.Response>;
-
-  sendNotification(
-    request: notification_pb.Notification,
-    metadata: grpcWeb.Metadata | null,
-    callback?: (err: grpcWeb.RpcError,
-               response: notification_pb.Response) => void) {
-    if (callback !== undefined) {
-      return this.client_.rpcCall(
-        this.hostname_ +
-          '/notifications.PushNotification/SendNotification',
-        request,
-        metadata || {},
-        this.methodDescriptorSendNotification,
-        callback);
-    }
-    return this.client_.unaryCall(
-    this.hostname_ +
-      '/notifications.PushNotification/SendNotification',
-    request,
-    metadata || {},
-    this.methodDescriptorSendNotification);
-  }
-
   methodDescriptorSubscribe = new grpcWeb.MethodDescriptor(
     '/notifications.PushNotification/Subscribe',
     grpcWeb.MethodType.UNARY,

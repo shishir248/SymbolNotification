@@ -4,20 +4,21 @@ package notifications;
 option go_package = "./";
 
 service PushNotification {
-    rpc SendNotification (Notification) returns (Response) {}
+    // rpc SendNotification (Notification) returns (Response) {}
     rpc Subscribe(SubscribeRequest) returns (Response) {}
 }
 
-message Notification {
-    string subscription = 1;
-    bool access = 2;
-    string title = 3;
-    string message = 4;
-}
+// message Notification {
+//     string subscription = 1;
+//     bool access = 2;
+//     string title = 3;
+//     string message = 4;
+// }
 
 message SubscribeRequest {
     string subscription = 1;
     string access_token = 2;
+    string message = 3;
 }
 
 message Response {

@@ -1,7 +1,6 @@
-import * as grpcWeb from 'grpc-web';
-import {PushNotificationClient} from '../files/web/NotificationServiceClientPb';
-import { Notification, Response} from '../files/web/notification_pb';
-import * as webPush from 'web-push';
+import * as grpcWeb from "grpc-web";
+import { PushNotificationClient } from "../files/web/NotificationServiceClientPb";
+import { Response, SubscribeRequest } from "../files/web/notification_pb";
 
 const htmlInputElement = (id: string) => {
   return <HTMLInputElement>document.getElementById(id);
@@ -17,7 +16,11 @@ const check = () => {
 };
 
 const registerServiceWorker = async () => {
-  const swRegistration = await navigator.serviceWorker.register("/sw.js"); //notice the file name
+  navigator.serviceWorker
+    .register("/service.js")
+    .then(() => console.log("Service Worker Registered"))
+    .catch((err) => console.log("Service Worker not registered", err));
+  const swRegistration = await navigator.serviceWorker.ready;
   return swRegistration;
 };
 
@@ -26,36 +29,54 @@ const requestNotificationPermission = async () => {
   if (permission !== "granted") {
     throw new Error("Permission not granted for Notification");
   }
-  return true
+  return true;
 };
 
-const sayHello = async  () => {
-  const notificationService = new PushNotificationClient('http://localhost:50052', null, null);
-  const request = new Notification();
-
+const subscribe = async () => {
   check();
   const swRegistration = await registerServiceWorker();
   const permission = await requestNotificationPermission();
-  request.setAccess(permission);
 
-
-  const call = notificationService.sendNotification(request, null,
-    (err: grpcWeb.RpcError, response: Response) => {
-      if (err) {
-        console.log(err)
-        return
-      }
-
-      var reply = document.getElementById("reply");
-      reply.textContent = response.getMessage();
-        
-      console.log(response);
+  const subscription = await swRegistration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array("YOUR_PUBLIC_VAPID_KEY"),
   });
 
-  call.on('status', (status: grpcWeb.Status) => {
+  const notificationService = new PushNotificationClient("http://localhost:50052", null, null);
+  const request = new SubscribeRequest();
+  request.setAccessToken("YOUR_ACCESS_TOKEN");
+  request.setSubscription(JSON.stringify(subscription));
+
+  const call = notificationService.subscribe(request, null, (err: grpcWeb.RpcError, response: Response) => {
+    if (err) {
+      console.log(err)
+      return
+    }
+    var reply = document.getElementById("reply");
+    reply.textContent = response.getMessage();
+    console.log(response);
+  });
+
+  // request.setAccess(permission);
+
+  call.on("status", (status: grpcWeb.Status) => {
     console.log("status:", status);
   });
-
 };
 
-htmlInputElement("sendBtn").addEventListener("click", sayHello);
+// urlBase64ToUint8Array is a magic function that will encode the base64 public key
+// to Array buffer which is needed by the subscription option
+const urlBase64ToUint8Array = (base64String: string) => {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/')
+  const rawData = atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
+htmlInputElement("subscribeBtn").addEventListener("click", subscribe);
+
+// htmlInputElement("sendBtn").addEventListener("click", sayHello);

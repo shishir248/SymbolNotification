@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -30,8 +31,28 @@ type server struct {
 	pb.UnimplementedPushNotificationServer
 }
 
+func (s *server) Subscribe(ctx context.Context, in *pb.SubscribeRequest) (*pb.Response, error) {
+	// Extract the subscription from the request message
+	var subscription *webpush.Subscription
+	if err := json.Unmarshal([]byte(in.GetSubscription()), &subscription); err != nil {
+		return nil, err
+	}
+
+	// Send a push notification to the client
+	_, err := webpush.SendNotification([]byte("Hello World"), subscription, &webpush.Options{
+		Subscriber:      "example@example.com",
+		VAPIDPublicKey:  "YOUR_PUBLIC_VAPID_KEY",
+		VAPIDPrivateKey: "YOUR_PRIVATE_VAPID_KEY",
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Response{Message: "Push notification sent"}, nil
+}
+
 func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
 	if in.GetAccess() {
+		subscription := in.GetSubscription()
 		payload := []byte(`{"title":"Push test", "body":"Hello World", "icon":"icon.png"}`) // Send push notification
 
 		_, err := webpush.SendNotification(payload, subscription, &webpush.Options{
