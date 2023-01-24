@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: notification.proto
 
-package __
+package notification
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
