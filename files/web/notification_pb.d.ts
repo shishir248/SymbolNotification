@@ -2,25 +2,10 @@ import * as jspb from 'google-protobuf'
 
 
 
-export class Subscription extends jspb.Message {
-  getAccess(): boolean;
-  setAccess(value: boolean): Subscription;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Subscription.AsObject;
-  static toObject(includeInstance: boolean, msg: Subscription): Subscription.AsObject;
-  static serializeBinaryToWriter(message: Subscription, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): Subscription;
-  static deserializeBinaryFromReader(message: Subscription, reader: jspb.BinaryReader): Subscription;
-}
-
-export namespace Subscription {
-  export type AsObject = {
-    access: boolean,
-  }
-}
-
 export class Notification extends jspb.Message {
+  getAccess(): boolean;
+  setAccess(value: boolean): Notification;
+
   getTitle(): string;
   setTitle(value: string): Notification;
 
@@ -37,6 +22,7 @@ export class Notification extends jspb.Message {
 
 export namespace Notification {
   export type AsObject = {
+    access: boolean,
     title: string,
     message: string,
   }

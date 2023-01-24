@@ -31,12 +31,11 @@ const requestNotificationPermission = async () => {
 const sayHello = async  () => {
   const notificationService = new PushNotificationClient('http://localhost:50052', null, null);
   const request = new Notification();
-  const subscription = new Subscription();
 
   check();
   const swRegistration = await registerServiceWorker();
   const permission = await requestNotificationPermission();
-  subscription.setAccess(permission);
+  request.setAccess(permission);
 
 
   const call = notificationService.sendNotification(request, null,
