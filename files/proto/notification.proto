@@ -8,7 +8,7 @@ service PushNotification {
 }
 
 message Subscription {
-    boolean access = 0;
+    bool access = 1;
 }
 
 message Notification {
