@@ -62,6 +62,11 @@ const sayHello = async  () => {
   call.on('status', (status: grpcWeb.Status) => {
     console.log("status:", status);
   });
+
+  access.on('status', (status: grpcWeb.Status) => {
+    console.log("status:", status);
+  });
+
 };
 
 htmlInputElement("sendBtn").addEventListener("click", sayHello);

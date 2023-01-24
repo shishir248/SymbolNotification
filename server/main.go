@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -23,13 +22,13 @@ type server struct {
 	pb.UnimplementedPushNotificationServer
 }
 
-func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
+func (s *server) GetAccess(ctx context.Context, in *pb.EmptyParam) (*pb.Subscription, error) {
 	log.Printf("Received: %v", in.GetAccess())
-	for in.GetAccess() {
-		return &pb.Response{Message: "Hello World"}, nil
-	}
-	log.Fatalf("Access Denied")
-	return nil, errors.New("Access Denied")
+	return in.GetAccess(), nil
+}
+
+func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
+	return &pb.Response{Message: "Hello World"}, nil
 }
 
 func main() {
@@ -39,7 +38,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+	pb.RegisterPushNotificationServer(s, &server{})
 	log.Printf("grpc server listening at %v", lis.Addr())
 	go func() {
 		log.Fatalf("failed to serve: %v", s.Serve(lis))

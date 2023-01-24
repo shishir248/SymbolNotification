@@ -2,6 +2,24 @@ import * as jspb from 'google-protobuf'
 
 
 
+export class Access extends jspb.Message {
+  getAccess(): boolean;
+  setAccess(value: boolean): Access;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Access.AsObject;
+  static toObject(includeInstance: boolean, msg: Access): Access.AsObject;
+  static serializeBinaryToWriter(message: Access, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Access;
+  static deserializeBinaryFromReader(message: Access, reader: jspb.BinaryReader): Access;
+}
+
+export namespace Access {
+  export type AsObject = {
+    access: boolean,
+  }
+}
+
 export class Subscription extends jspb.Message {
   getAccess(): boolean;
   setAccess(value: boolean): Subscription;
@@ -17,20 +35,6 @@ export class Subscription extends jspb.Message {
 export namespace Subscription {
   export type AsObject = {
     access: boolean,
-  }
-}
-
-export class EmptyParam extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): EmptyParam.AsObject;
-  static toObject(includeInstance: boolean, msg: EmptyParam): EmptyParam.AsObject;
-  static serializeBinaryToWriter(message: EmptyParam, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): EmptyParam;
-  static deserializeBinaryFromReader(message: EmptyParam, reader: jspb.BinaryReader): EmptyParam;
-}
-
-export namespace EmptyParam {
-  export type AsObject = {
   }
 }
 
