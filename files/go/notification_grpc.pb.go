@@ -22,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PushNotificationClient interface {
-	GetAccess(ctx context.Context, in *EmptyParams, opts ...grpc.CallOption) (*Subscription, error)
 	SendNotification(ctx context.Context, in *Notification, opts ...grpc.CallOption) (*Response, error)
 }
 
@@ -32,15 +31,6 @@ type pushNotificationClient struct {
 
 func NewPushNotificationClient(cc grpc.ClientConnInterface) PushNotificationClient {
 	return &pushNotificationClient{cc}
-}
-
-func (c *pushNotificationClient) GetAccess(ctx context.Context, in *EmptyParams, opts ...grpc.CallOption) (*Subscription, error) {
-	out := new(Subscription)
-	err := c.cc.Invoke(ctx, "/notifications.PushNotification/GetAccess", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *pushNotificationClient) SendNotification(ctx context.Context, in *Notification, opts ...grpc.CallOption) (*Response, error) {
@@ -56,7 +46,6 @@ func (c *pushNotificationClient) SendNotification(ctx context.Context, in *Notif
 // All implementations should embed UnimplementedPushNotificationServer
 // for forward compatibility
 type PushNotificationServer interface {
-	GetAccess(context.Context, *EmptyParams) (*Subscription, error)
 	SendNotification(context.Context, *Notification) (*Response, error)
 }
 
@@ -64,9 +53,6 @@ type PushNotificationServer interface {
 type UnimplementedPushNotificationServer struct {
 }
 
-func (UnimplementedPushNotificationServer) GetAccess(context.Context, *EmptyParams) (*Subscription, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAccess not implemented")
-}
 func (UnimplementedPushNotificationServer) SendNotification(context.Context, *Notification) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendNotification not implemented")
 }
@@ -80,24 +66,6 @@ type UnsafePushNotificationServer interface {
 
 func RegisterPushNotificationServer(s grpc.ServiceRegistrar, srv PushNotificationServer) {
 	s.RegisterService(&PushNotification_ServiceDesc, srv)
-}
-
-func _PushNotification_GetAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmptyParams)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PushNotificationServer).GetAccess(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/notifications.PushNotification/GetAccess",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PushNotificationServer).GetAccess(ctx, req.(*EmptyParams))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _PushNotification_SendNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -125,10 +93,6 @@ var PushNotification_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "notifications.PushNotification",
 	HandlerType: (*PushNotificationServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetAccess",
-			Handler:    _PushNotification_GetAccess_Handler,
-		},
 		{
 			MethodName: "SendNotification",
 			Handler:    _PushNotification_SendNotification_Handler,

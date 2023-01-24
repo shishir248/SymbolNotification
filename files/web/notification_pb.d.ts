@@ -20,20 +20,6 @@ export namespace Subscription {
   }
 }
 
-export class EmptyParams extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): EmptyParams.AsObject;
-  static toObject(includeInstance: boolean, msg: EmptyParams): EmptyParams.AsObject;
-  static serializeBinaryToWriter(message: EmptyParams, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): EmptyParams;
-  static deserializeBinaryFromReader(message: EmptyParams, reader: jspb.BinaryReader): EmptyParams;
-}
-
-export namespace EmptyParams {
-  export type AsObject = {
-  }
-}
-
 export class Notification extends jspb.Message {
   getTitle(): string;
   setTitle(value: string): Notification;
