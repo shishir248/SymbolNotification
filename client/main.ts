@@ -31,20 +31,13 @@ const requestNotificationPermission = async () => {
 const sayHello = async  () => {
   const notificationService = new PushNotificationClient('http://localhost:50052', null, null);
   const request = new Notification();
-  const empty = new EmptyParam();
+  const subscription = new Subscription();
 
+  check();
+  const swRegistration = await registerServiceWorker();
+  const permission = await requestNotificationPermission();
+  subscription.setAccess(permission);
 
-  const access = notificationService.getAccess(empty, null,
-    async (err: grpcWeb.RpcError, subscription: Subscription) => {
-      check();
-      const swRegistration = await registerServiceWorker();
-      const permission = await requestNotificationPermission();
-      if (err) {
-        console.log(err)
-        return
-      }
-      subscription.setAccess(permission);
-  });
 
   const call = notificationService.sendNotification(request, null,
     (err: grpcWeb.RpcError, response: Response) => {
@@ -60,10 +53,6 @@ const sayHello = async  () => {
   });
 
   call.on('status', (status: grpcWeb.Status) => {
-    console.log("status:", status);
-  });
-
-  access.on('status', (status: grpcWeb.Status) => {
     console.log("status:", status);
   });
 
