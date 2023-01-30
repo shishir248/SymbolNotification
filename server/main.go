@@ -10,10 +10,9 @@ import (
 	"net/http"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
-	"github.com/gorilla/websocket"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	pb "github.com/shishir248/SymbolNotification/files/go"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/transport/grpc-websocket-proxy/wsproxy"
 )
 
 var (
@@ -65,37 +64,19 @@ func main() {
 	}()
 
 	// gRPC web code
-	// grpcWebServer := grpcweb.WrapServer(
-	// 	s,
-	// 	// Enable CORS
-	// 	grpcweb.WithOriginFunc(func(origin string) bool { return true }),
-	// )
+	grpcWebServer := grpcweb.WrapServer(
+		s,
+		// Enable CORS
+		grpcweb.WithOriginFunc(func(origin string) bool { return true }),
+	)
 
-	//* Wrap around a http server.
-	// srv := &http.Server{
-	// 	Handler: grpcWebServer,
-	// 	Addr:    fmt.Sprintf("localhost:%d", *port+1),
-	// }
-
-	//* Using websockets
-	// Upgrade HTTP handler to handle WebSockets
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool { return true },
+	srv := &http.Server{
+		Handler: grpcWebServer,
+		Addr:    fmt.Sprintf("localhost:%d", *port+1),
 	}
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Printf("Failed to upgrade connection: %v", err)
-			return
-		}
 
-		// Use the wsproxy package to proxy gRPC-Web requests over the WebSockets connection
-		wsproxy.ServeGRPC(s, conn)
-	})
-
-	log.Printf("http server listening at %v", *port+1)
-	http.ListenAndServe(fmt.Sprintf("localhost:%d", *port+1), nil)
-	// if err := srv.ListenAndServe(); err != nil {
-	// 	log.Fatalf("failed to serve: %v", err)
-	// }
+	log.Printf("http server listening at %v", srv.Addr)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
