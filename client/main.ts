@@ -39,19 +39,27 @@ const subscribe = async () => {
 
   const subscription = await swRegistration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array("YOUR_PUBLIC_VAPID_KEY"),
+    applicationServerKey: urlBase64ToUint8Array("BG9lF97uafdJ_A9vVXpM3iJx_BGnCKQVy0LdAtTIrI_9KhIXiFHYYhvDimWsTt2pzSxE0jbmc17LskZrilTv4ZI"),
   });
 
-  const notificationService = new PushNotificationClient("http://localhost:50052", null, null);
+  // const notificationService = new PushNotificationClient("http://localhost:50052", null, null);
+  const notificationService = new PushNotificationClient(
+    "ws://localhost:50052",
+    null,
+    null,
+    );
   const request = new SubscribeRequest();
-  request.setAccessToken("YOUR_ACCESS_TOKEN");
+  request.setAccessToken("afsafafafsfsasf");
   request.setSubscription(JSON.stringify(subscription));
+
+  console.log(JSON.stringify(subscription));
 
   const call = notificationService.subscribe(request, null, (err: grpcWeb.RpcError, response: Response) => {
     if (err) {
-      console.log(err)
+      console.log(err);
       return
     }
+
     var reply = document.getElementById("reply");
     reply.textContent = response.getMessage();
     console.log(response);

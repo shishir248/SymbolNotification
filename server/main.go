@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -11,19 +10,17 @@ import (
 	"net/http"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/gorilla/websocket"
 	pb "github.com/shishir248/SymbolNotification/files/go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/transport/grpc-websocket-proxy/wsproxy"
 )
 
 var (
-	port = flag.Int("port", 50051, "The server port")
-)
-
-var (
-	vapidPublicKey  = "YOUR_PUBLIC_VAPID_KEY"
-	vapidPrivateKey = "YOUR_PRIVATE_VAPID_KEY"
-	vapidEmail      = "example@yourdomain.org"
+	port            = flag.Int("port", 50051, "The server port")
+	vapidEmail      = "kumarshishir248@gmail.com"
+	vapidPublicKey  = "BG9lF97uafdJ_A9vVXpM3iJx_BGnCKQVy0LdAtTIrI_9KhIXiFHYYhvDimWsTt2pzSxE0jbmc17LskZrilTv4ZI"
+	vapidPrivateKey = "9Ym-7WhhSCbmpZpKrr_i829qysLZnIFC7efp3jb4noo"
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -38,37 +35,20 @@ func (s *server) Subscribe(ctx context.Context, in *pb.SubscribeRequest) (*pb.Re
 		return nil, err
 	}
 
+	payload := `{"title": "My notification title","body": "My notification body"}`
+
 	// Send a push notification to the client
-	_, err := webpush.SendNotification([]byte("Hello World"), subscription, &webpush.Options{
-		Subscriber:      "example@example.com",
-		VAPIDPublicKey:  "YOUR_PUBLIC_VAPID_KEY",
-		VAPIDPrivateKey: "YOUR_PRIVATE_VAPID_KEY",
+	status, err := webpush.SendNotification([]byte(payload), subscription, &webpush.Options{
+		Subscriber:      vapidEmail,
+		VAPIDPublicKey:  vapidPublicKey,
+		VAPIDPrivateKey: vapidPrivateKey,
+		TTL:             30,
 	})
 	if err != nil {
 		return nil, err
 	}
+	log.Println(status.Status)
 	return &pb.Response{Message: "Push notification sent"}, nil
-}
-
-func (s *server) SendNotification(ctx context.Context, in *pb.Notification) (*pb.Response, error) {
-	if in.GetAccess() {
-		subscription := in.GetSubscription()
-		payload := []byte(`{"title":"Push test", "body":"Hello World", "icon":"icon.png"}`) // Send push notification
-
-		_, err := webpush.SendNotification(payload, subscription, &webpush.Options{
-			Subscriber:      vapidEmail,
-			VAPIDPublicKey:  vapidPublicKey,
-			VAPIDPrivateKey: vapidPrivateKey,
-		})
-		if err != nil {
-			log.Printf("Error sending push notification: %v", err)
-			return nil, err
-		}
-
-		return &pb.Response{Message: "Hello World"}, nil
-	}
-	log.Fatalf("Access Denied")
-	return nil, errors.New("Access Denied")
 }
 
 func main() {
@@ -85,19 +65,37 @@ func main() {
 	}()
 
 	// gRPC web code
-	grpcWebServer := grpcweb.WrapServer(
-		s,
-		// Enable CORS
-		grpcweb.WithOriginFunc(func(origin string) bool { return true }),
-	)
+	// grpcWebServer := grpcweb.WrapServer(
+	// 	s,
+	// 	// Enable CORS
+	// 	grpcweb.WithOriginFunc(func(origin string) bool { return true }),
+	// )
 
-	srv := &http.Server{
-		Handler: grpcWebServer,
-		Addr:    fmt.Sprintf("localhost:%d", *port+1),
-	}
+	//* Wrap around a http server.
+	// srv := &http.Server{
+	// 	Handler: grpcWebServer,
+	// 	Addr:    fmt.Sprintf("localhost:%d", *port+1),
+	// }
 
-	log.Printf("http server listening at %v", srv.Addr)
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	//* Using websockets
+	// Upgrade HTTP handler to handle WebSockets
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
 	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Printf("Failed to upgrade connection: %v", err)
+			return
+		}
+
+		// Use the wsproxy package to proxy gRPC-Web requests over the WebSockets connection
+		wsproxy.ServeGRPC(s, conn)
+	})
+
+	log.Printf("http server listening at %v", *port+1)
+	http.ListenAndServe(fmt.Sprintf("localhost:%d", *port+1), nil)
+	// if err := srv.ListenAndServe(); err != nil {
+	// 	log.Fatalf("failed to serve: %v", err)
+	// }
 }
